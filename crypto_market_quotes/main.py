@@ -44,12 +44,10 @@ def get_fiat_usd_rate(currency):
         return target / usd
 
     elif currency in ['btc']:
-        return coindesk.rate('usd').current()
+        return 1/coindesk.rate('usd').current()
 
     elif currency in ['usd']:
         return 1
-
-
 
 
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
