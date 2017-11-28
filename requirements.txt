@@ -1,2 +1,2 @@
 https://github.com/delta575/trading-api-wrappers/archive/v0.3.8-2.zip
-pyyaml
+PyYAML==3.12

@@ -2,11 +2,11 @@ import sys
 from datetime import datetime, timezone
 
 import yaml
-from crypto_market_quotes.clients import surbtcClient
+from crypto_market_quotes.clients import SurbtcClient
 
 def get_client(exchange):
     if exchange.lower() == 'surbtc':
-        return surbtcClient()
+        return SurbtcClient()
     else:
         raise
 

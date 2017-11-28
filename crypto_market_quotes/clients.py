@@ -1,11 +1,11 @@
 from trading_api_wrappers import SURBTC
 
-
-class exchangeClient(object):
+class ExchangeClient(object):
     def __init__(self):
         pass
 
-    def get_quote(self, orderbook, quote_max_accumulated):
+    @staticmethod
+    def get_quote(orderbook, quote_max_accumulated):
         results = []
         for operation_type in ('bids', 'asks'):
             quoted_accumulated = 0
@@ -27,21 +27,23 @@ class exchangeClient(object):
         return results
 
 
-class surbtcClient(exchangeClient):
+class SurbtcClient(ExchangeClient):
     client = SURBTC.Public()
 
-    def get_pair_mapping(self, base, quote):
+    @staticmethod
+    def get_pair_mapping(base, quote):
         return base + '-' + quote
 
-    def standarize_orderbook(self, raw_orderbook):
+    @staticmethod
+    def standarize_orderbook(raw_orderbook):
         orderbook = {}
         orderbook['bids'] = sorted(
             [(entry.amount, entry.price) for entry in raw_orderbook.bids],
-            key = lambda x: x[1], reverse=True
+            key=lambda x: x[1], reverse=True
         )
         orderbook['asks'] = sorted(
             [(entry.amount, entry.price) for entry in raw_orderbook.asks],
-            key = lambda x: x[1], reverse=False
+            key=lambda x: x[1], reverse=False
         )
         return orderbook
 
@@ -49,4 +51,3 @@ class surbtcClient(exchangeClient):
         market = self.get_pair_mapping(base, quote)
         orderbook = self.client.order_book(market)
         return self.standarize_orderbook(orderbook)
-
