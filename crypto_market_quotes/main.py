@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 import yaml
 from crypto_market_quotes.clients import SurbtcClient, KrakenClient, BitfinexClient
+from trading_api_wrappers import CoinDesk
 
 def get_client(exchange):
     if exchange.lower() == 'surbtc':
@@ -35,6 +36,20 @@ CONVERTION_FIAT_RATE = {
     'usd': 1
 }
 
+def get_fiat_usd_rate(currency):
+    coindesk = CoinDesk()
+    if currency in ['clp', 'cop', 'pen', 'eur']:
+        usd = coindesk.rate('usd').current()
+        target = coindesk.rate(currency).current()
+        return target / usd
+
+    elif currency in ['btc']:
+        return coindesk.rate('usd').current()
+
+    elif currency in ['usd']:
+        return 1
+
+
 
 
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
@@ -48,6 +63,12 @@ def main():
     if len(sys.argv) > 1:
         exchange = sys.argv[1].lower()
         exchanges = [exchange, ]
+
+    for currency in CONVERTION_FIAT_RATE:
+        try:
+            CONVERTION_FIAT_RATE[currency] = get_fiat_usd_rate(currency)
+        except:
+            pass
 
     for exchange in exchanges:
         client = get_client(exchange)
