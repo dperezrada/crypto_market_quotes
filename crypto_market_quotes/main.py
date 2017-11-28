@@ -53,7 +53,7 @@ def get_fiat_usd_rate(currency):
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
 
 def main():
-    config = yaml.load(open("config.yml").read())
+    config = yaml.load(open("./config.yml").read())
 
     exchanges_markets = build_markets(config)
 
