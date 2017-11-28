@@ -1,4 +1,4 @@
-from trading_api_wrappers import SURBTC, Kraken
+from trading_api_wrappers import SURBTC, Kraken, Bitfinex
 
 class ExchangeClient(object):
     def __init__(self):
@@ -86,5 +86,32 @@ class KrakenClient(ExchangeClient):
     def get_orderbook(self, base, quote):
         market = self.get_pair_mapping(base, quote)
         orderbook = self.client.order_book(market)['result'][market]
+
+        return self.standarize_orderbook(orderbook)
+
+
+class BitfinexClient(ExchangeClient):
+    client = Bitfinex.Public()
+
+    @staticmethod
+    def get_pair_mapping(base, quote):
+        return base + quote
+
+    @staticmethod
+    def standarize_orderbook(raw_orderbook):
+        orderbook = {}
+        orderbook['bids'] = sorted(
+            [(float(entry['amount']), float(entry['price'])) for entry in raw_orderbook['bids']],
+            key=lambda x: x[1], reverse=True
+        )
+        orderbook['asks'] = sorted(
+            [(float(entry['amount']), float(entry['price'])) for entry in raw_orderbook['asks']],
+            key=lambda x: x[1], reverse=False
+        )
+        return orderbook
+
+    def get_orderbook(self, base, quote):
+        market = self.get_pair_mapping(base, quote)
+        orderbook = self.client.order_book(market)
 
         return self.standarize_orderbook(orderbook)

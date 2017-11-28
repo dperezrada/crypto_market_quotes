@@ -18,3 +18,12 @@ exchanges:
       - usd
       - eur
       - btc
+  bitfinex:
+    base:
+      - btc
+      - eth
+      - bch
+    quote:
+      - usd
+      - eur
+      - btc

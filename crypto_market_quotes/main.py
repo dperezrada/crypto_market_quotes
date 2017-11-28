@@ -2,13 +2,15 @@ import sys
 from datetime import datetime, timezone
 
 import yaml
-from crypto_market_quotes.clients import SurbtcClient, KrakenClient
+from crypto_market_quotes.clients import SurbtcClient, KrakenClient, BitfinexClient
 
 def get_client(exchange):
     if exchange.lower() == 'surbtc':
         return SurbtcClient()
     elif exchange.lower() == 'kraken':
         return KrakenClient()
+    elif exchange.lower() == 'bitfinex':
+        return BitfinexClient()
     else:
         raise
 
@@ -50,7 +52,10 @@ def main():
     for exchange in exchanges:
         client = get_client(exchange)
         for base, quote in exchanges_markets[exchange]:
-            orderbook = client.get_orderbook(base, quote)
+            try:
+                orderbook = client.get_orderbook(base, quote)
+            except:
+                continue
             for amount in QUOTE_AMOUNTS_USD:
                 quote_amount = amount * CONVERTION_FIAT_RATE[quote]
                 quote_bid, quote_ask = client.get_quote(orderbook, quote_amount)
