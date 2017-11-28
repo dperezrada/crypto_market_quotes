@@ -1,0 +1,20 @@
+exchanges:
+  surbtc:
+    base:
+      - btc
+      - eth
+      - bch
+    quote:
+      - clp
+      - cop
+      - pen
+      - btc
+  kraken:
+    base:
+      - btc
+      - eth
+      - bch
+    quote:
+      - usd
+      - eur
+      - btc
