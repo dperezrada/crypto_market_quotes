@@ -35,15 +35,17 @@ CONVERTION_FIAT_RATE = {
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000]
 
 def main():
-    exchange = sys.argv[1]
-    client = get_client(exchange)
     config = yaml.load(open("config.yml").read())
 
     exchanges_markets = build_markets(config)
 
-    for exchange in exchanges_markets.keys():
-        if exchange != 'surbtc':
-            continue
+    exchanges = exchanges_markets.keys()
+    if len(sys.argv) > 1:
+        exchange = sys.argv[1].lower()
+        exchanges = [exchange, ]
+
+    for exchange in exchanges:
+        client = get_client(exchange)
         for base, quote in exchanges_markets[exchange]:
             orderbook = client.get_orderbook(base, quote)
             for amount in QUOTE_AMOUNTS_USD:
