@@ -1,4 +1,4 @@
-from trading_api_wrappers import SURBTC
+from trading_api_wrappers import SURBTC, Kraken
 
 class ExchangeClient(object):
     def __init__(self):
@@ -50,4 +50,41 @@ class SurbtcClient(ExchangeClient):
     def get_orderbook(self, base, quote):
         market = self.get_pair_mapping(base, quote)
         orderbook = self.client.order_book(market)
+        return self.standarize_orderbook(orderbook)
+
+class KrakenClient(ExchangeClient):
+    client = Kraken.Public()
+
+    @staticmethod
+    def get_pair_mapping(base, quote):
+        currency_mapping = {
+            'btc': 'XXBT',
+            'eth': 'XETH',
+            'bch': 'BCH',
+            'usd': 'ZUSD',
+            'eur': 'ZEUR'
+        }
+        if base == 'bch':
+            pair = currency_mapping[base]+currency_mapping[quote][1:]
+        else:
+            pair = currency_mapping[base]+currency_mapping[quote]
+        return pair
+
+    @staticmethod
+    def standarize_orderbook(raw_orderbook):
+        orderbook = {}
+        orderbook['bids'] = sorted(
+            [(float(entry[1]), float(entry[0])) for entry in raw_orderbook['bids']],
+            key=lambda x: x[1], reverse=True
+        )
+        orderbook['asks'] = sorted(
+            [(float(entry[1]), float(entry[0])) for entry in raw_orderbook['asks']],
+            key=lambda x: x[1], reverse=False
+        )
+        return orderbook
+
+    def get_orderbook(self, base, quote):
+        market = self.get_pair_mapping(base, quote)
+        orderbook = self.client.order_book(market)['result'][market]
+
         return self.standarize_orderbook(orderbook)

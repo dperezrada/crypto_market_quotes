@@ -2,11 +2,13 @@ import sys
 from datetime import datetime, timezone
 
 import yaml
-from crypto_market_quotes.clients import SurbtcClient
+from crypto_market_quotes.clients import SurbtcClient, KrakenClient
 
 def get_client(exchange):
     if exchange.lower() == 'surbtc':
         return SurbtcClient()
+    elif exchange.lower() == 'kraken':
+        return KrakenClient()
     else:
         raise
 
@@ -27,12 +29,13 @@ CONVERTION_FIAT_RATE = {
     'eur': 0.84,
     'cop': 3012,
     'pen': 3.24,
-    'btc': 0.00010
+    'btc': 0.00010,
+    'usd': 1
 }
 
 
 
-QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000]
+QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
 
 def main():
     config = yaml.load(open("config.yml").read())
