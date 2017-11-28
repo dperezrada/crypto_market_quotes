@@ -1,3 +1,4 @@
+import os
 import sys
 from datetime import datetime, timezone
 
@@ -53,7 +54,8 @@ def get_fiat_usd_rate(currency):
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
 
 def main():
-    config = yaml.load(open("./config.yml").read())
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    config = yaml.load(open(os.path.join(current_dir, "..", "config.yml")).read())
 
     exchanges_markets = build_markets(config)
 
