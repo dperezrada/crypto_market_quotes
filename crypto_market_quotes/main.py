@@ -1,10 +1,13 @@
 import os
 import sys
+import uuid
+import json
 from datetime import datetime, timezone
 
 import yaml
 from crypto_market_quotes.clients import SurbtcClient, KrakenClient, BitfinexClient
 from trading_api_wrappers import CoinDesk
+from google.cloud import bigquery
 
 def get_client(exchange):
     if exchange.lower() == 'surbtc':
@@ -52,6 +55,16 @@ def get_fiat_usd_rate(currency):
 
 
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
+DATASET_ID = 'crypto_market_quotes'
+TABLE_ID = 'bid_ask'
+
+def get_bigquery_client():
+    bigquery_client = bigquery.Client()
+    dataset_ref = bigquery_client.dataset(DATASET_ID)
+    today = datetime.now(timezone.utc).isoformat().split('T')[0].replace('-', '')
+    table_ref = dataset_ref.table(TABLE_ID+'$'+today)
+    table = bigquery_client.get_table(table_ref)
+    return bigquery_client, table
 
 def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -69,6 +82,7 @@ def main():
             CONVERTION_FIAT_RATE[currency] = get_fiat_usd_rate(currency)
         except:
             pass
+    bigquery_client, table = get_bigquery_client()
 
     for exchange in exchanges:
         client = get_client(exchange)
@@ -77,17 +91,26 @@ def main():
                 orderbook = client.get_orderbook(base, quote)
             except:
                 continue
+            datetime_ = datetime.now(timezone.utc).isoformat().split('+')[0]
+            bq_rows = []
             for amount in QUOTE_AMOUNTS_USD:
                 quote_amount = amount * CONVERTION_FIAT_RATE[quote]
                 quote_bid, quote_ask = client.get_quote(orderbook, quote_amount)
-                quote_bid = quote_bid if quote_bid else '-'
-                quote_ask = quote_ask if quote_ask else '-'
-                print('\t'.join([
-                    str(row_el) for row_el in [
-                        datetime.now(timezone.utc).isoformat(" "),
-                        exchange, base, quote, amount, quote_bid, quote_ask
-                    ]
-                ]))
+                row = [
+                    str(uuid.uuid4()), str(datetime_), exchange, base,
+                    quote, amount, quote_bid, quote_ask
+                ]
+
+                row[6] = quote_bid if quote_bid else '-1'
+                row[7] = quote_ask if quote_ask else '-1'
+                bq_rows.append(row)
+                print('\t'.join([str(row_el) for row_el in row]))
+
+            errors = bigquery_client.create_rows(
+                table, bq_rows, row_ids=[row_el[0] for row_el in bq_rows]
+            )
+            if errors:
+                print(errors, file=sys.stderr)
 
 if __name__ == '__main__':
     main()

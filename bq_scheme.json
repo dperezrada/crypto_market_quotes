@@ -1,0 +1,42 @@
+[
+    {
+        "mode": "REQUIRED",
+        "name": "id",
+        "type": "STRING"
+    },
+    {
+        "mode": "REQUIRED",
+        "name": "datetime",
+        "type": "DATETIME"
+    },
+    {
+        "mode": "REQUIRED",
+        "name": "exchange",
+        "type": "STRING"
+    },
+    {
+        "mode": "REQUIRED",
+        "name": "base",
+        "type": "STRING"
+    },
+    {
+        "mode": "REQUIRED",
+        "name": "quote",
+        "type": "STRING"
+    },
+    {
+        "mode": "REQUIRED",
+        "name": "amount",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "quote_bid",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "quote_ask",
+        "type": "FLOAT"
+    }
+]

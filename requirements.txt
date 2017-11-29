@@ -1,2 +1,3 @@
 https://github.com/delta575/trading-api-wrappers/archive/v0.3.8-2.zip
 PyYAML==3.12
+google-cloud-bigquery
