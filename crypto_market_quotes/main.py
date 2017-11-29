@@ -1,11 +1,10 @@
 import os
 import sys
 import uuid
-import json
 from datetime import datetime, timezone
 
 import yaml
-from crypto_market_quotes.clients import SurbtcClient, KrakenClient, BitfinexClient
+from crypto_market_quotes.clients import SurbtcClient, KrakenClient, BitfinexClient, CryptoMKTClient
 from trading_api_wrappers import CoinDesk
 from google.cloud import bigquery
 
@@ -16,6 +15,8 @@ def get_client(exchange):
         return KrakenClient()
     elif exchange.lower() == 'bitfinex':
         return BitfinexClient()
+    elif exchange.lower() == 'cryptomkt':
+        return CryptoMKTClient()
     else:
         raise
 
@@ -36,22 +37,24 @@ CONVERTION_FIAT_RATE = {
     'eur': 0.84,
     'cop': 3012,
     'pen': 3.24,
+    'ars': 0.057,
+    'brl': 0.31,
     'btc': 0.00010,
     'usd': 1
 }
 
 def get_fiat_usd_rate(currency):
     coindesk = CoinDesk()
-    if currency in ['clp', 'cop', 'pen', 'eur']:
+    if currency in ['btc']:
+        return 1.0/coindesk.rate('usd').current()
+    elif currency in ['usd']:
+        return 1
+    else:
         usd = coindesk.rate('usd').current()
         target = coindesk.rate(currency).current()
         return target / usd
 
-    elif currency in ['btc']:
-        return 1.0/coindesk.rate('usd').current()
 
-    elif currency in ['usd']:
-        return 1
 
 
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]

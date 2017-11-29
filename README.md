@@ -10,7 +10,7 @@ ansible-playbook -i hosts provisioning.yml -u dperezrada --sudo --extra-vars="ho
 ## deploy
 
 ```
-ansible-playbook -i hosts deploy.yml -u dperezrada --sudo --extra-vars="hosts=antarctic-data1
+ansible-playbook -i hosts deploy.yml -u dperezrada --sudo --extra-vars="hosts=antarctic-data1"
 ```
 
 ## Execute

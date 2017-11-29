@@ -27,3 +27,11 @@ exchanges:
       - usd
       - eur
       - btc
+  cryptomkt:
+    base:
+      - eth
+    quote:
+      - clp
+      - ars
+      - eur
+      - brl

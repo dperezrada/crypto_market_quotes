@@ -29,3 +29,4 @@
       - { minute: '*', exchange: 'bitfinex' }
       - { minute: '*/3', exchange: 'surbtc' }
       - { minute: '*', exchange: 'kraken' }
+      - { minute: '*/3', exchange: 'cryptomkt' }
