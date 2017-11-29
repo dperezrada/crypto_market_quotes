@@ -76,13 +76,17 @@ def main():
     if len(sys.argv) > 1:
         exchange = sys.argv[1].lower()
         exchanges = [exchange, ]
+    DEV = False
+    if os.environ.get('DEV'):
+        DEV = True
 
     for currency in CONVERTION_FIAT_RATE:
         try:
             CONVERTION_FIAT_RATE[currency] = get_fiat_usd_rate(currency)
         except:
             pass
-    bigquery_client, table = get_bigquery_client()
+    if not DEV:
+        bigquery_client, table = get_bigquery_client()
 
     for exchange in exchanges:
         client = get_client(exchange)
@@ -106,11 +110,12 @@ def main():
                 bq_rows.append(row)
                 print('\t'.join([str(row_el) for row_el in row]))
 
-            errors = bigquery_client.create_rows(
-                table, bq_rows, row_ids=[row_el[0] for row_el in bq_rows]
-            )
-            if errors:
-                print(errors, file=sys.stderr)
+            if not DEV:
+                errors = bigquery_client.create_rows(
+                    table, bq_rows, row_ids=[row_el[0] for row_el in bq_rows]
+                )
+                if errors:
+                    print(errors, file=sys.stderr)
 
 if __name__ == '__main__':
     main()
