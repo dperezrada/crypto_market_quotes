@@ -48,7 +48,7 @@ def get_fiat_usd_rate(currency):
         return target / usd
 
     elif currency in ['btc']:
-        return 1/coindesk.rate('usd').current()
+        return 1.0/coindesk.rate('usd').current()
 
     elif currency in ['usd']:
         return 1
