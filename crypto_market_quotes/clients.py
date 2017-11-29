@@ -26,6 +26,19 @@ class ExchangeClient(object):
                 results.append(quoted_accumulated/base_accumulated)
         return results
 
+    @staticmethod
+    def base_standarize_orderbook(raw_orderbook, get_row):
+        orderbook = {}
+        orderbook['bids'] = sorted(
+            [[float(entry_el) for entry_el in get_row(entry)] for entry in raw_orderbook['bids']],
+            key=lambda x: x[1], reverse=True
+        )
+        orderbook['asks'] = sorted(
+            [[float(entry_el) for entry_el in get_row(entry)] for entry in raw_orderbook['asks']],
+            key=lambda x: x[1], reverse=False
+        )
+        return orderbook
+
 
 class SurbtcClient(ExchangeClient):
     client = SURBTC.Public()
@@ -34,22 +47,19 @@ class SurbtcClient(ExchangeClient):
     def get_pair_mapping(base, quote):
         return base + '-' + quote
 
-    @staticmethod
-    def standarize_orderbook(raw_orderbook):
-        orderbook = {}
-        orderbook['bids'] = sorted(
-            [(entry.amount, entry.price) for entry in raw_orderbook.bids],
-            key=lambda x: x[1], reverse=True
+    @classmethod
+    def standarize_orderbook(cls, raw_orderbook):
+        return cls.base_standarize_orderbook(
+            raw_orderbook, lambda entry: (entry.amount, entry.price)
         )
-        orderbook['asks'] = sorted(
-            [(entry.amount, entry.price) for entry in raw_orderbook.asks],
-            key=lambda x: x[1], reverse=False
-        )
-        return orderbook
+
 
     def get_orderbook(self, base, quote):
         market = self.get_pair_mapping(base, quote)
-        orderbook = self.client.order_book(market)
+        tmp_orderbook = self.client.order_book(market)
+        orderbook = {}
+        orderbook['bids'] = tmp_orderbook.bids
+        orderbook['asks'] = tmp_orderbook.asks
         return self.standarize_orderbook(orderbook)
 
 class KrakenClient(ExchangeClient):
@@ -70,23 +80,15 @@ class KrakenClient(ExchangeClient):
             pair = currency_mapping[base]+currency_mapping[quote]
         return pair
 
-    @staticmethod
-    def standarize_orderbook(raw_orderbook):
-        orderbook = {}
-        orderbook['bids'] = sorted(
-            [(float(entry[1]), float(entry[0])) for entry in raw_orderbook['bids']],
-            key=lambda x: x[1], reverse=True
+    @classmethod
+    def standarize_orderbook(cls, raw_orderbook):
+        return cls.base_standarize_orderbook(
+            raw_orderbook, lambda entry: (entry[1], entry[0])
         )
-        orderbook['asks'] = sorted(
-            [(float(entry[1]), float(entry[0])) for entry in raw_orderbook['asks']],
-            key=lambda x: x[1], reverse=False
-        )
-        return orderbook
 
     def get_orderbook(self, base, quote):
         market = self.get_pair_mapping(base, quote)
         orderbook = self.client.order_book(market)['result'][market]
-
         return self.standarize_orderbook(orderbook)
 
 
@@ -97,23 +99,15 @@ class BitfinexClient(ExchangeClient):
     def get_pair_mapping(base, quote):
         return base + quote
 
-    @staticmethod
-    def standarize_orderbook(raw_orderbook):
-        orderbook = {}
-        orderbook['bids'] = sorted(
-            [(float(entry['amount']), float(entry['price'])) for entry in raw_orderbook['bids']],
-            key=lambda x: x[1], reverse=True
+    @classmethod
+    def standarize_orderbook(cls, raw_orderbook):
+        return cls.base_standarize_orderbook(
+            raw_orderbook, lambda entry: (entry['amount'], entry['price'])
         )
-        orderbook['asks'] = sorted(
-            [(float(entry['amount']), float(entry['price'])) for entry in raw_orderbook['asks']],
-            key=lambda x: x[1], reverse=False
-        )
-        return orderbook
 
     def get_orderbook(self, base, quote):
         market = self.get_pair_mapping(base, quote)
         orderbook = self.client.order_book(market)
-
         return self.standarize_orderbook(orderbook)
 
 
@@ -124,18 +118,11 @@ class CryptoMKTClient(ExchangeClient):
     def get_pair_mapping(base, quote):
         return base + quote
 
-    @staticmethod
-    def standarize_orderbook(raw_orderbook):
-        orderbook = {}
-        orderbook['bids'] = sorted(
-            [(entry.amount, entry.price) for entry in raw_orderbook['bids']],
-            key=lambda x: x[1], reverse=True
+    @classmethod
+    def standarize_orderbook(cls, raw_orderbook):
+        return cls.base_standarize_orderbook(
+            raw_orderbook, lambda entry: (entry.amount, entry.price)
         )
-        orderbook['asks'] = sorted(
-            [(entry.amount, entry.price) for entry in raw_orderbook['asks']],
-            key=lambda x: x[1], reverse=False
-        )
-        return orderbook
 
     def get_orderbook(self, base, quote):
         market = self.get_pair_mapping(base, quote)

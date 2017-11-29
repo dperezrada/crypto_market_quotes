@@ -27,6 +27,6 @@
     cron: name="calculate exchange {{ item.exchange }}" hour="*" minute="{{ item.minute }}" user="deploy" job="mkdir -p /home/deploy/data/{{ item.exchange }}/$(date +\\%Y-\\%m-\\%d); /home/deploy/envs/pydev/bin/python3.6 /home/deploy/repos/crypto_market_quotes/crypto_market_quotes/main.py {{ item.exchange }} >> /home/deploy/data/{{ item.exchange }}/$(date +\\%Y-\\%m-\\%d)/$(date +\\%H).log 2>> {{ home_path }}/logs/calculate_{{ item.exchange }}.log"
     with_items:
       - { minute: '*', exchange: 'bitfinex' }
-      - { minute: '*/3', exchange: 'surbtc' }
+      - { minute: '*', exchange: 'surbtc' }
       - { minute: '*', exchange: 'kraken' }
-      - { minute: '*/3', exchange: 'cryptomkt' }
+      - { minute: '*', exchange: 'cryptomkt' }
