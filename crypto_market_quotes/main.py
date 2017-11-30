@@ -4,19 +4,18 @@ import uuid
 from datetime import datetime, timezone
 
 import yaml
-from crypto_market_quotes.clients import SurbtcClient, KrakenClient, BitfinexClient, CryptoMKTClient
-from trading_api_wrappers import CoinDesk
+from trading_api_wrappers import CoinDesk, SURBTC, Kraken, Bitfinex, CryptoMKT
 from google.cloud import bigquery
 
 def get_client(exchange):
     if exchange.lower() == 'surbtc':
-        return SurbtcClient()
+        return SURBTC.Standard()
     elif exchange.lower() == 'kraken':
-        return KrakenClient()
+        return Kraken.Standard()
     elif exchange.lower() == 'bitfinex':
-        return BitfinexClient()
+        return Bitfinex.Standard()
     elif exchange.lower() == 'cryptomkt':
-        return CryptoMKTClient()
+        return CryptoMKT.Standard()
     else:
         raise
 
