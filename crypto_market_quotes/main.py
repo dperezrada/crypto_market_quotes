@@ -136,9 +136,8 @@ def save(rows, bigquery_client=None, table=None, add_id=False):
         )
         if errors:
             print(errors, file=sys.stderr)
-    else:
-        for row in rows:
-            print('\t'.join([str(row_el) for row_el in row]))
+    for row in rows:
+        print('\t'.join([str(row_el).lower() if row_el is not None else '-' for row_el in row]))
 
 def get_exchanges(exchanges_markets, exchange=None):
     if exchange:
@@ -186,11 +185,21 @@ def save_currency_rates():
 
     save(rows, bigquery_client, table=table, add_id=True)
 
+def save_all_orders(exchanges):
+    bigquery_client, table = get_bigquery_client('orders')
+
+    for exchange in exchanges:
+        client = get_client(exchange, AUTHKEYS)
+        for base, quote in EXCHANGES_MARKETS[exchange]:
+            orders = client.get_orders(base, quote, state='traded')
+            save(orders, bigquery_client, table=table, add_id=True)
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "process_type", type=str,
+        "process_type",
+        type=str,
         choices=['currency_rates', 'bid_ask', 'withdrawals', 'deposits', 'orders']
     )
     parser.add_argument("-e", "--exchange", type=str)
@@ -206,6 +215,9 @@ def main():
         save_all_withdrawals(exchanges)
     elif process_t == 'deposits':
         save_all_deposits(exchanges)
+    elif process_t == 'orders':
+        save_all_orders(exchanges)
+
 
 if __name__ == '__main__':
     main()
