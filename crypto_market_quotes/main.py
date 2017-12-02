@@ -177,6 +177,8 @@ def save_currency_rates():
     bigquery_client, table = get_bigquery_client('currency_rate')
     rows = []
     for fiat_currency in CONVERTION_FIAT_RATE:
+        if CONVERTION_FIAT_LASTUPDATE.get(fiat_currency) is None:
+            continue
         rows.append([
             CONVERTION_FIAT_LASTUPDATE[fiat_currency],
             fiat_currency,

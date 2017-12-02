@@ -13,7 +13,8 @@
   tasks:
   - name: Pull sources from the repository.
     git: repo={{ repo }} dest={{ repos_root }}/{{repo_name}} version={{ project_branch|default("master") }} accept_hostkey=yes
-
+  - name: Copy authkeys
+    copy: src=authkeys.yml dest={{ repos_root }}/{{repo_name}}/authkeys.tml owner=deploy group=deploy mode=0600
   - name: Change owner to deploy
     file: path={{ repos_root }}/{{repo_name}} owner=deploy group=deploy recurse=yes
 
