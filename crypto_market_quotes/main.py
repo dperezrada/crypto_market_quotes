@@ -1,6 +1,7 @@
 import os
 import sys
 import uuid
+import json
 import argparse
 from datetime import datetime, timezone
 
@@ -8,17 +9,41 @@ import yaml
 from trading_api_wrappers import CoinDesk, SURBTC, Kraken, Bitfinex, CryptoMKT
 from google.cloud import bigquery
 
-CONVERTION_FIAT_RATE = {
-    'clp': 643,
-    'eur': 0.84,
-    'cop': 3012,
-    'pen': 3.24,
-    'ars': 0.057,
-    'brl': 0.31,
-    'btc': 0.00010,
-    'usd': 1
-}
+FIAT_CURRENCIES = ['clp', 'cop', 'pen', 'usd', 'eur']
+CONVERTION_FIAT_RATE = {}
 CONVERTION_FIAT_LASTUPDATE = {}
+CONVERTION_FIAT_FILE = '/tmp/last_rate.json'
+
+
+def get_fiat_usd_rate(currency):
+    coindesk = CoinDesk()
+    if currency == 'btc':
+        return 1.0/coindesk.rate('usd').current()
+    elif currency == 'usd':
+        return 1
+    else:
+        usd = coindesk.rate('usd').current()
+        target = coindesk.rate(currency).current()
+        return target / usd
+
+def calculate_rates():
+    for currency in FIAT_CURRENCIES:
+        try:
+            CONVERTION_FIAT_RATE[currency] = get_fiat_usd_rate(currency)
+            CONVERTION_FIAT_LASTUPDATE[currency] = datetime.now(timezone.utc).isoformat().split('+')[0]
+        except:
+            pass
+
+    with open(CONVERTION_FIAT_FILE, 'wt') as file_:
+        if len(CONVERTION_FIAT_RATE.keys()) > 0:
+            file_.write(json.dumps(CONVERTION_FIAT_RATE))
+
+
+if os.path.exists(CONVERTION_FIAT_FILE):
+    CONVERTION_FIAT_RATE = json.loads(open(CONVERTION_FIAT_FILE).read())
+else:
+    calculate_rates()
+
 
 DEV = True if os.environ.get('DEV') else False
 QUOTE_AMOUNTS_USD = [0.01, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
@@ -75,18 +100,6 @@ def get_client(exchange, authkeys=None):
     else:
         raise
 
-
-def get_fiat_usd_rate(currency):
-    coindesk = CoinDesk()
-    if currency == 'btc':
-        return 1.0/coindesk.rate('usd').current()
-    elif currency == 'usd':
-        return 1
-    else:
-        usd = coindesk.rate('usd').current()
-        target = coindesk.rate(currency).current()
-        return target / usd
-
 def get_bigquery_client(table_id):
     if DEV:
         return None, None
@@ -114,15 +127,6 @@ def get_quote_base_orderbooks(client, exchange, base, quote):
         rows.append(row)
     return rows
 
-
-def calculate_rates():
-    for currency in CONVERTION_FIAT_RATE:
-        try:
-            CONVERTION_FIAT_RATE[currency] = get_fiat_usd_rate(currency)
-            CONVERTION_FIAT_LASTUPDATE[currency] = datetime.now(timezone.utc).isoformat().split('+')[0]
-        except:
-            pass
-
 def save(rows, bigquery_client=None, table=None, add_id=False):
     if add_id:
         rows = [
@@ -145,7 +149,6 @@ def get_exchanges(exchanges_markets, exchange=None):
     return exchanges_markets.keys()
 
 def save_bid_ask(exchanges):
-    calculate_rates()
     bigquery_client, table = get_bigquery_client('bid_ask')
 
     for exchange in exchanges:
