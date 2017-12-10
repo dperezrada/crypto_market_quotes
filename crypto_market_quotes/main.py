@@ -2,6 +2,7 @@ import os
 import sys
 import uuid
 import json
+import codecs
 import argparse
 from datetime import datetime, timezone
 
@@ -85,16 +86,16 @@ def get_client(exchange, authkeys=None):
     secret = None
     if authkeys is not None:
         try:
-            key = authkeys[exchange]['API_KEY']
-            secret = authkeys[exchange]['API_SECRET']
+            key = codecs.decode(authkeys[exchange]['API_KEY'], 'rot_13')
+            secret = codecs.decode(authkeys[exchange]['API_SECRET'], 'rot_13')
         except:
             pass
     if exchange.lower() == 'surbtc':
         return SURBTC.Standard(key=key, secret=secret)
     elif exchange.lower() == 'kraken':
-        return Kraken.Standard()
+        return Kraken.Standard(key=key, secret=secret)
     elif exchange.lower() == 'bitfinex':
-        return Bitfinex.Standard()
+        return Bitfinex.Standard(key=key, secret=secret)
     elif exchange.lower() == 'cryptomkt':
         return CryptoMKT.Standard()
     else:
@@ -141,7 +142,7 @@ def save(rows, bigquery_client=None, table=None, add_id=False):
         if errors:
             print(errors, file=sys.stderr)
     for row in rows:
-        print('\t'.join([str(row_el).lower() if row_el is not None else '-' for row_el in row]))
+        print('\t'.join([str(row_el) if row_el is not None else '-' for row_el in row]))
 
 def get_exchanges(exchanges_markets, exchange=None):
     if exchange:
@@ -173,7 +174,7 @@ def save_all_deposits(exchanges):
         client = get_client(exchange, AUTHKEYS)
         for currency in EXCHANGES_CURRENCIES[exchange]:
             deposits = client.get_deposits(currency)
-            save(deposits, bigquery_client, table=table, add_id=True)
+            save(deposits, bigquery_client, table=table)
 
 def save_currency_rates():
     calculate_rates()
@@ -197,7 +198,7 @@ def save_all_orders(exchanges):
         client = get_client(exchange, AUTHKEYS)
         for base, quote in EXCHANGES_MARKETS[exchange]:
             orders = client.get_orders(base, quote, state='traded')
-            save(orders, bigquery_client, table=table, add_id=True)
+            save(orders, bigquery_client, table=table)
 
 
 def main():
