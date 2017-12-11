@@ -10,7 +10,7 @@ import yaml
 from trading_api_wrappers import CoinDesk, SURBTC, Kraken, Bitfinex, CryptoMKT
 from google.cloud import bigquery
 
-FIAT_CURRENCIES = ['clp', 'cop', 'pen', 'usd', 'eur']
+FIAT_CURRENCIES = ['clp', 'cop', 'pen', 'usd', 'eur', 'btc']
 CONVERTION_FIAT_RATE = {}
 CONVERTION_FIAT_LASTUPDATE = {}
 CONVERTION_FIAT_FILE = '/tmp/last_rate.json'
