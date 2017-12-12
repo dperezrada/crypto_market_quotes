@@ -173,7 +173,10 @@ def save_all_deposits(exchanges):
     for exchange in exchanges:
         client = get_client(exchange, AUTHKEYS)
         for currency in EXCHANGES_CURRENCIES[exchange]:
-            deposits = client.get_deposits(currency)
+            try:
+                deposits = client.get_deposits(currency)
+            except ValueError:
+                continue
             save(deposits, bigquery_client, table=table)
 
 def save_currency_rates():
