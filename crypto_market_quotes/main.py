@@ -71,9 +71,10 @@ def build_currencies(config):
         exchanges_currencies[exchange] = []
         exchange_data = config['exchanges'][exchange]
         for base in exchange_data['base']:
-            exchanges_currencies[exchange].append(base)
+            if base not in exchanges_currencies[exchange]:
+                exchanges_currencies[exchange].append(base)
         for quote in exchange_data['quote']:
-            if quote not in exchanges_currencies:
+            if quote not in exchanges_currencies[exchange]:
                 exchanges_currencies[exchange].append(quote)
     return exchanges_currencies
 
@@ -164,7 +165,11 @@ def save_all_withdrawals(exchanges):
     for exchange in exchanges:
         client = get_client(exchange, AUTHKEYS)
         for currency in EXCHANGES_CURRENCIES[exchange]:
-            withdrawals = client.get_withdrawals(currency)
+            try:
+                withdrawals = client.get_withdrawals(currency)
+            except:
+                print("ERROR: %s/%s" % (exchange, currency), file=sys.stderr)
+                continue
             save(withdrawals, bigquery_client, table=table)
 
 def save_all_deposits(exchanges):
@@ -175,7 +180,8 @@ def save_all_deposits(exchanges):
         for currency in EXCHANGES_CURRENCIES[exchange]:
             try:
                 deposits = client.get_deposits(currency)
-            except ValueError:
+            except:
+                print("ERROR: %s/%s" % (exchange, currency), file=sys.stderr)
                 continue
             save(deposits, bigquery_client, table=table)
 
@@ -203,13 +209,25 @@ def save_all_orders(exchanges):
             orders = client.get_orders(base, quote, state='traded')
             save(orders, bigquery_client, table=table)
 
+def save_all_trades(exchanges):
+    bigquery_client, table = get_bigquery_client('trades')
+
+    for exchange in exchanges:
+        client = get_client(exchange, AUTHKEYS)
+        if exchange == "surbtc":
+            print("hola")
+            for base, quote in EXCHANGES_MARKETS[exchange]:
+                trades = client.get_trades(base, quote)
+                trades_formatted = []
+                save(trades, bigquery_client, table=table)
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "process_type",
         type=str,
-        choices=['currency_rates', 'bid_ask', 'withdrawals', 'deposits', 'orders']
+        choices=['currency_rates', 'bid_ask', 'withdrawals', 'deposits', 'orders', 'trades']
     )
     parser.add_argument("-e", "--exchange", type=str)
     args = parser.parse_args()
@@ -226,6 +244,8 @@ def main():
         save_all_deposits(exchanges)
     elif process_t == 'orders':
         save_all_orders(exchanges)
+    elif process_t == 'trades':
+        save_all_trades(['surbtc',])
 
 
 if __name__ == '__main__':

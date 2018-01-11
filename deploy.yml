@@ -14,7 +14,7 @@
   - name: Pull sources from the repository.
     git: repo={{ repo }} dest={{ repos_root }}/{{repo_name}} version={{ project_branch|default("master") }} accept_hostkey=yes
   - name: Copy authkeys
-    copy: src=authkeys.yml dest={{ repos_root }}/{{repo_name}}/authkeys.tml owner=deploy group=deploy mode=0600
+    copy: src=authkeys.yml dest={{ repos_root }}/{{repo_name}}/authkeys.yml owner=deploy group=deploy mode=0600
   - name: Change owner to deploy
     file: path={{ repos_root }}/{{repo_name}} owner=deploy group=deploy recurse=yes
 
@@ -34,3 +34,6 @@
 
   - name: Setting crontab for currency_rates
     cron: name="calculate currency_rates" hour="*" minute="*" user="deploy" job="mkdir -p /home/deploy/data/currency_rates/$(date +\\%Y-\\%m-\\%d); /home/deploy/envs/pydev/bin/python3.6 /home/deploy/repos/crypto_market_quotes/crypto_market_quotes/main.py currency_rates >> /home/deploy/data/currency_rates/$(date +\\%Y-\\%m-\\%d)/$(date +\\%H).log 2>> {{ home_path }}/logs/currency_rates.log"
+
+  - name: Setting crontab for trades
+    cron: name="calculate trades" hour="*" minute="*" user="deploy" job="mkdir -p /home/deploy/data/trades/surbtc/$(date +\\%Y-\\%m-\\%d); /home/deploy/envs/pydev/bin/python3.6 /home/deploy/repos/crypto_market_quotes/crypto_market_quotes/main.py trades -e surbtc >> /home/deploy/data/trades/surbtc/$(date +\\%Y-\\%m-\\%d)/$(date +\\%H).log 2>> {{ home_path }}/logs/trades_surbtc.log"
