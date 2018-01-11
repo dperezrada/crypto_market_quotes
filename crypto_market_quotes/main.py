@@ -157,7 +157,7 @@ def save_bid_ask(exchanges):
         client = get_client(exchange, AUTHKEYS)
         for base, quote in EXCHANGES_MARKETS[exchange]:
             order_books = get_quote_base_orderbooks(client, exchange, base, quote)
-            save(order_books, bigquery_client, table=table)
+            save(list(order_books), bigquery_client, table=table)
 
 def save_all_withdrawals(exchanges):
     bigquery_client, table = get_bigquery_client('withdrawal')
@@ -170,7 +170,7 @@ def save_all_withdrawals(exchanges):
             except:
                 print("ERROR: %s/%s" % (exchange, currency), file=sys.stderr)
                 continue
-            save(withdrawals, bigquery_client, table=table)
+            save(list(withdrawals), bigquery_client, table=table)
 
 def save_all_deposits(exchanges):
     bigquery_client, table = get_bigquery_client('deposit')
@@ -183,7 +183,7 @@ def save_all_deposits(exchanges):
             except:
                 print("ERROR: %s/%s" % (exchange, currency), file=sys.stderr)
                 continue
-            save(deposits, bigquery_client, table=table)
+            save(list(deposits), bigquery_client, table=table)
 
 def save_currency_rates():
     calculate_rates()
@@ -207,7 +207,7 @@ def save_all_orders(exchanges):
         client = get_client(exchange, AUTHKEYS)
         for base, quote in EXCHANGES_MARKETS[exchange]:
             orders = client.get_orders(base, quote, state='traded')
-            save(orders, bigquery_client, table=table)
+            save(list(orders), bigquery_client, table=table)
 
 def save_all_trades(exchanges):
     bigquery_client, table = get_bigquery_client('trades')
@@ -215,11 +215,9 @@ def save_all_trades(exchanges):
     for exchange in exchanges:
         client = get_client(exchange, AUTHKEYS)
         if exchange == "surbtc":
-            print("hola")
             for base, quote in EXCHANGES_MARKETS[exchange]:
                 trades = client.get_trades(base, quote)
-                trades_formatted = []
-                save(trades, bigquery_client, table=table)
+                save(list(trades), bigquery_client, table=table)
 
 
 def main():
