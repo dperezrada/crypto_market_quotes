@@ -19,7 +19,7 @@
     file: path={{ repos_root }}/{{repo_name}} owner=deploy group=deploy recurse=yes
 
   - name: Install requirements
-    shell: "{{environment_path}}/bin/pip install -U -r {{requirements_file}}"
+    shell: "{{environment_path}}/bin/pip install --upgrade --force-reinstall -r {{requirements_file}}"
 
   - name: Install package
     shell: "cd {{ repos_root }}/{{repo_name}};{{environment_path}}/bin/python setup.py develop"
