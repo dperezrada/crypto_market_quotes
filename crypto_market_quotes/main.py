@@ -158,8 +158,11 @@ def save_bid_ask(exchanges):
     for exchange in exchanges:
         client = get_client(exchange, AUTHKEYS)
         for base, quote in EXCHANGES_MARKETS[exchange]:
-            order_books = get_quote_base_orderbooks(client, exchange, base, quote)
-            save(list(order_books), bigquery_client, table=table)
+            try:
+                order_books = get_quote_base_orderbooks(client, exchange, base, quote)
+                save(list(order_books), bigquery_client, table=table)
+            except:
+                print("ERROR: %s/%s-%s" % (exchange, base, quote), file=sys.stderr)
 
 def save_all_withdrawals(exchanges):
     bigquery_client, table = get_bigquery_client('withdrawal')
