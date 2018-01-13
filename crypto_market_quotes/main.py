@@ -130,6 +130,8 @@ def get_quote_base_orderbooks(client, exchange, base, quote):
     return rows
 
 def save(rows, bigquery_client=None, table=None, add_id=False):
+    if len(rows) == 0:
+        return
     if add_id:
         rows = [
             [str(uuid.uuid4()),] + list(row)
